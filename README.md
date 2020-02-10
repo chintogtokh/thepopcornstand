@@ -36,7 +36,7 @@ It's just a `docker-compose` file that includes all the basics you need for a me
 
 A pseudo network diagram:
 
-![Popcorn Stand](https://octodex.github.com/images/yaktocat.png)
+![Popcorn Stand](.readme/popcornstand.png)
 
 # Can you explain the .env file options
 
