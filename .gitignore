@@ -1,0 +1,6 @@
+!.gitkeep
+config/
+data/*
+.env
+web/index.html
+*.DS_Store
