@@ -2,6 +2,10 @@
 
 Docker-based portable home server setup.
 
+## Prerequisites
+
+You need docker, docker-compose, and python3.
+
 ## How to set-up
 
 1. Do a `cp env.example .env` and edit the `.env` file with your details.
