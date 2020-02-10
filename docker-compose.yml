@@ -1,0 +1,162 @@
+version: '3.5'
+services:
+  calibre:
+    image: linuxserver/calibre-web
+    container_name: calibre
+    networks:
+      - popcornstand
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TIMEZONE}
+      - DOCKER_MODS=linuxserver/calibre-web:calibre
+      - VIRTUAL_HOST=calibre.${URL}
+      - VIRTUAL_PORT=8083
+    volumes:
+      - ./config/calibre:/config
+      - ${BOOKS_DIR}:/books
+    # ports:
+    #   - 8083:8083
+    restart: unless-stopped
+  plex:
+    image: linuxserver/plex
+    container_name: plex
+    networks:
+      - popcornstand
+    environment:
+      - TZ=${TIMEZONE}
+      - PUID=1000
+      - PGID=1000
+      - VERSION=docker
+      - VIRTUAL_HOST=plex.${URL}
+      - VIRTUAL_PORT=32400
+    volumes:
+      - ./config/plex:/config
+      - ${SERIES_DIR}:/tv
+      - ${MOVIES_DIR}:/movies
+    restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    ports:
+      - "1900:1900"
+      - "3005:3005"
+      - "5353:5353"
+      - "8324:8324"
+      - "32400:32400"
+      - "32410:32410"
+      - "32412:32412"
+      - "32413:32413"
+      - "32414:32414"
+      - "32469:32469"
+  transmission:
+    image: haugene/transmission-openvpn
+    # network_mode: bridge
+    container_name: transmission
+    networks:
+      - popcornstand
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TIMEZONE}
+      - TRANSMISSION_WEB_UI=combustion
+      - VIRTUAL_HOST=transmission.${URL}
+      - VIRTUAL_PORT=9091
+      - LOCAL_NETWORK=192.168.1.0/24
+      - CREATE_TUN_DEVICE=true
+      - OPENVPN_PROVIDER=${OPENVPN_PROVIDER}
+      - OPENVPN_CONFIG=${OPENVPN_CONFIG}
+      - OPENVPN_USERNAME=${OPENVPN_USERNAME}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+      - WEBPROXY_ENABLED=false
+    # ports:
+    #   - "9091:9091"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    cap_add:
+      - ALL
+    volumes:
+      - ./config/transmission:/config
+      - ${DOWNLOADS_DIR}:/downloads
+    restart: unless-stopped
+  jackett:
+    image: linuxserver/jackett
+    container_name: jackett
+    networks:
+      - popcornstand
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TIMEZONE}
+      # - RUN_OPTS=run options here #optional
+      - VIRTUAL_HOST=jackett.${URL}
+      - VIRTUAL_PORT=9117
+    volumes:
+      - ./config/jackett:/config
+      - ${DOWNLOADS_DIR}:/downloads
+    # ports:
+    #   - 9117:9117
+    restart: unless-stopped  
+  series:
+    image: linuxserver/sonarr
+    container_name: sonarr
+    # network_mode: bridge
+    networks:
+      - popcornstand
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TIMEZONE}
+      - UMASK_SET=022 #optional
+      - VIRTUAL_HOST=series.${URL}
+      - VIRTUAL_PORT=8989
+    volumes:
+      - ./config/sonarr:/config
+      - ${SERIES_DIR}:/tv
+      - ${DOWNLOADS_DIR}:/downloads
+    # ports:
+    #   - 8989:8989
+    restart: unless-stopped 
+  movies:
+    image: linuxserver/radarr
+    container_name: radarr
+    networks:
+      - popcornstand
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TIMEZONE}
+      - UMASK_SET=022 #optional
+      - VIRTUAL_HOST=movies.${URL}
+      - VIRTUAL_PORT=7878
+    volumes:
+      - ./config/radarr:/config
+      - ${MOVIES_DIR}:/movies
+      - ${DOWNLOADS_DIR}:/downloads
+    # ports:
+    #   - 7878:7878
+    restart: unless-stopped  
+  proxy:
+    build: docker/proxy 
+    networks:
+      - popcornstand
+    container_name: nginx-proxy
+    ports:
+      - "${HTTP_PORT}:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+  web:
+    image: nginx
+    networks:
+      - popcornstand
+    volumes:
+      - "./web/:/usr/share/nginx/html"
+    environment:
+      - VIRTUAL_HOST=web.${URL}
+      - VIRTUAL_PORT=80
+    expose:
+      - "80"
+networks:
+  popcornstand:
+    driver: bridge
