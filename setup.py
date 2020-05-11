@@ -44,8 +44,8 @@ html_template = '''<!DOCTYPE html>
 
             for(var i=0; i< length; i++){
                 a[i].href += 'http://' + a[i].id + ".${URL}";
+                if (a[i].id === "plex") { a[i].href += ":32400" }
             }
-
         });
 
     </script>

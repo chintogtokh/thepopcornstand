@@ -18,37 +18,38 @@ services:
     # ports:
     #   - 8083:8083
     restart: unless-stopped
-  plex:
-    image: linuxserver/plex
-    container_name: plex
-    networks:
-      - popcornstand
-    environment:
-      - TZ=${TIMEZONE}
-      - PUID=1000
-      - PGID=1000
-      - VERSION=docker
-      - VIRTUAL_HOST=plex.${URL}
-      - VIRTUAL_PORT=32400
-    volumes:
-      - ./config/plex:/config
-      - ${SERIES_DIR}:/tv
-      - ${MOVIES_DIR}:/movies
-    restart: unless-stopped
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-    ports:
-      - "1900:1900"
-      - "3005:3005"
-      - "5353:5353"
-      - "8324:8324"
-      - "32400:32400"
-      - "32410:32410"
-      - "32412:32412"
-      - "32413:32413"
-      - "32414:32414"
-      - "32469:32469"
+#  plex:
+#    image: linuxserver/plex
+#    container_name: plex
+#    network_mode: host
+#    #  - popcornstand
+#    environment:
+#      - TZ=${TIMEZONE}
+#      - PUID=1000
+#      - PGID=1000
+#      - VERSION=docker
+#      - VIRTUAL_HOST=plex.${URL}
+#      - VIRTUAL_PORT=32400
+#      - ADVERTISE_IP=192.168.1.10
+#    volumes:
+#      - ./config/plex:/config
+#      - ${SERIES_DIR}:/tv
+#      - ${MOVIES_DIR}:/movies
+#    restart: unless-stopped
+#    dns:
+#      - 8.8.8.8
+#      - 8.8.4.4
+#    ports:
+#      - "1900:1900"
+#      - "3005:3005"
+#      - "5353:5353"
+#      - "8324:8324"
+#      - "32400:32400"
+#      - "32410:32410"
+#      - "32412:32412"
+#      - "32413:32413"
+#      - "32414:32414"
+#      - "32469:32469"
   transmission:
     image: haugene/transmission-openvpn
     # network_mode: bridge
@@ -69,8 +70,9 @@ services:
       - OPENVPN_USERNAME=${OPENVPN_USERNAME}
       - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
       - WEBPROXY_ENABLED=false
-    # ports:
-    #   - "9091:9091"
+    ports:
+      - "9091:9091/tcp"
+      - "9091:9091/udp"
     dns:
       - 8.8.8.8
       - 8.8.4.4
@@ -138,7 +140,7 @@ services:
     #   - 7878:7878
     restart: unless-stopped  
   proxy:
-    build: docker/proxy 
+    build: config/.docker/proxy 
     networks:
       - popcornstand
     container_name: nginx-proxy
